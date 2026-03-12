@@ -1,5 +1,11 @@
 const Idea = require("../models/Idea")
 const asyncHandler = require("../middleware/asyncHandler")
+const {
+  deleteKeysByPattern,
+  getCache,
+  isRedisReady,
+  setCache
+} = require("../utils/redisClient")
 
 // Create Idea
 const createIdea = asyncHandler(async (req, res) => {
@@ -66,6 +72,8 @@ const createIdea = asyncHandler(async (req, res) => {
     createdBy: req.user._id
   })
 
+  await deleteKeysByPattern("ideas:*")
+
   res.status(201).json({
     success: true,
     idea
@@ -75,6 +83,21 @@ const createIdea = asyncHandler(async (req, res) => {
 
 // Get All Ideas with Pagination + Filters
 const getIdeas = asyncHandler(async (req, res) => {
+
+  const cacheKey = `ideas:${req.originalUrl}`
+  const cacheTtlSeconds = Number(process.env.IDEAS_CACHE_TTL_SECONDS) || 60
+
+  if (isRedisReady()) {
+    try {
+      const cached = await getCache(cacheKey)
+      if (cached) {
+        res.setHeader("x-cache", "HIT")
+        return res.status(200).json(JSON.parse(cached))
+      }
+    } catch (err) {
+      // Cache errors should not block the request
+    }
+  }
 
   const page = Number(req.query.page) || 1
   const limit = Number(req.query.limit) || 10
@@ -105,19 +128,45 @@ const getIdeas = asyncHandler(async (req, res) => {
 
   const total = await Idea.countDocuments(filter)
 
-  res.status(200).json({
+  const responsePayload = {
     success: true,
     page,
     totalPages: Math.ceil(total / limit),
     totalIdeas: total,
     ideas
-  })
+  }
+
+  if (isRedisReady()) {
+    try {
+      await setCache(cacheKey, JSON.stringify(responsePayload), cacheTtlSeconds)
+      res.setHeader("x-cache", "MISS")
+    } catch (err) {
+      // Cache errors should not block the response
+    }
+  }
+
+  res.status(200).json(responsePayload)
 
 })
 
 
 // Get Single Idea
 const getIdeaById = asyncHandler(async (req, res) => {
+
+  const cacheKey = `idea:${req.params.id}`
+  const cacheTtlSeconds = Number(process.env.IDEA_CACHE_TTL_SECONDS) || 60
+
+  if (isRedisReady()) {
+    try {
+      const cached = await getCache(cacheKey)
+      if (cached) {
+        res.setHeader("x-cache", "HIT")
+        return res.status(200).json(JSON.parse(cached))
+      }
+    } catch (err) {
+      // Cache errors should not block the request
+    }
+  }
 
   const idea = await Idea.findById(req.params.id)
     .populate("createdBy", "name avatar")
@@ -127,10 +176,21 @@ const getIdeaById = asyncHandler(async (req, res) => {
     throw new Error("Idea not found")
   }
 
-  res.status(200).json({
+  const responsePayload = {
     success: true,
     idea
-  })
+  }
+
+  if (isRedisReady()) {
+    try {
+      await setCache(cacheKey, JSON.stringify(responsePayload), cacheTtlSeconds)
+      res.setHeader("x-cache", "MISS")
+    } catch (err) {
+      // Cache errors should not block the response
+    }
+  }
+
+  res.status(200).json(responsePayload)
 
 })
 
@@ -252,6 +312,9 @@ const updateIdea = asyncHandler(async (req, res) => {
     { new: true, runValidators: true }
   )
 
+  await deleteKeysByPattern("ideas:*")
+  await deleteKeysByPattern(`idea:${req.params.id}`)
+
   res.status(200).json({
     success: true,
     idea: updatedIdea
@@ -276,6 +339,9 @@ const deleteIdea = asyncHandler(async (req, res) => {
   }
 
   await idea.deleteOne()
+
+  await deleteKeysByPattern("ideas:*")
+  await deleteKeysByPattern(`idea:${req.params.id}`)
 
   res.status(200).json({
     success: true,

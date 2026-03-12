@@ -4,9 +4,11 @@ const connectDB = require("./config/db")
 require("./config/passport")
 const app = require("./app")
 const logger = require("./utils/logger")
+const { connectRedis } = require("./utils/redisClient")
 
 // Connect Database
 connectDB()
+connectRedis()
 
 const PORT = process.env.PORT || 5000
 

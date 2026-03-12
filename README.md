@@ -1,75 +1,102 @@
 # IdeaForge
 
-IdeaForge is a full-stack idea sharing platform with authentication, ideas, comments, reactions, join requests, and notifications.
+IdeaForge is a full-stack platform for publishing ideas, collaborating through comments and reactions, and managing join requests with notifications and role-based access.
 
-## Features
+## Highlights
 - Google OAuth login with JWT-based API access
-- CRUD for ideas
+- Idea lifecycle: create, update, delete, browse, and search
 - Comments and reactions on ideas
-- Join requests with approve/reject flows
+- Join requests with approve and reject flows
 - Notifications for user activity
-- Rate limiting, request logging, and basic metrics
+- Security middleware, rate limiting, request logging, and metrics
+- Redis response caching for idea list and detail endpoints
 
 ## Tech Stack
 - Backend: Node.js, Express, MongoDB (Mongoose), Passport (Google OAuth)
-- Frontend: React + Vite, React Router, Axios
-- Testing: Jest + Supertest
+- Frontend: React, Vite, React Router, Axios
+- Cache: Redis
+- Testing: Jest, Supertest
 
-## Project Structure
-- backend/ - Express API, MongoDB models, routes, controllers
-- frontend/ - React app
+## Repository Layout
+- backend/ - API server, models, controllers, routes
+- frontend/ - React client
 
 ## Prerequisites
 - Node.js 18+ and npm
-- MongoDB running locally or a hosted MongoDB URI
+- MongoDB (local or hosted)
 - Google OAuth credentials (for login)
+- Redis (optional but recommended for caching)
 
 ## Environment Variables
-Copy the examples and fill values:
 
 Backend (backend/.env)
-- NODE_ENV=development
-- PORT=5000
-- MONGO_URI=
-- JWT_SECRET=
-- GOOGLE_CLIENT_ID=
-- GOOGLE_CLIENT_SECRET=
-- FRONTEND_URL=http://localhost:5173
-- CORS_ORIGINS=http://localhost:5173
-- LOG_LEVEL=debug
+```
+NODE_ENV=development
+PORT=5000
+MONGO_URI=
+JWT_SECRET=
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+FRONTEND_URL=https://idea-forge-seven.vercel.app
+CORS_ORIGINS=https://idea-forge-seven.vercel.app
+LOG_LEVEL=debug
+
+# Redis (optional)
+REDIS_INTERNAL_URL=
+REDIS_URL=
+REDIS_HOST=127.0.0.1
+REDIS_PORT=6379
+IDEAS_CACHE_TTL_SECONDS=60
+IDEA_CACHE_TTL_SECONDS=60
+```
 
 Frontend (frontend/.env)
-- VITE_API_URL=http://localhost:5000
+```
+VITE_API_URL=https://ideaforge-y20t.onrender.com
+```
 
 ## Install
-From the repo root:
 
 Backend
-1) cd backend
-2) npm install
+```
+cd backend
+npm install
+```
 
 Frontend
-1) cd frontend
-2) npm install
+```
+cd frontend
+npm install
+```
 
 ## Run Locally
+
 Backend
-1) cd backend
-2) npm run dev
+```
+cd backend
+npm run dev
+```
 
 Frontend
-1) cd frontend
-2) npm run dev
+```
+cd frontend
+npm run dev
+```
 
-Frontend runs at http://localhost:5173
-Backend runs at http://localhost:5000
+Default local URLs:
+- Frontend: http://localhost:5173
+- Backend: http://localhost:5000
 
 ## Tests
-Backend tests:
-1) cd backend
-2) npm test
+
+Backend tests
+```
+cd backend
+npm test
+```
 
 ## API Quick Reference
+
 Base URL: /api
 
 Auth
@@ -118,3 +145,4 @@ Health and Metrics
 ## Notes
 - Protected routes require a valid JWT in the Authorization header.
 - CORS origins are controlled by CORS_ORIGINS in the backend env.
+- Caching is best-effort and automatically bypassed if Redis is unavailable.
