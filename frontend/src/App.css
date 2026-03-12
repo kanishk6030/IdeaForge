@@ -359,6 +359,15 @@
   gap: 16px;
 }
 
+.join-requests-list {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.join-request-card {
+  padding: 18px 20px;
+}
+
 .skeleton {
   position: relative;
   overflow: hidden;

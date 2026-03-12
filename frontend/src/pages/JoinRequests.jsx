@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { Link } from "react-router-dom"
 import api from "../api/client.js"
 import { useAuth } from "../context/AuthContext.jsx"
 
@@ -102,7 +103,7 @@ const JoinRequests = () => {
         )}
       </div>
 
-      <div className="list">
+      <div className="list join-requests-list">
         {loadingRequests && Array.from({ length: 4 }).map((_, index) => (
           <div key={`skeleton-${index}`} className="skeleton-card">
             <div className="skeleton skeleton-line large" />
@@ -114,10 +115,16 @@ const JoinRequests = () => {
           <div className="card">No requests for this idea yet.</div>
         )}
         {!loadingRequests && requests.map((request) => (
-          <div key={request._id} className="card soft">
+          <div key={request._id} className="card soft join-request-card">
             <div className="card-header">
               <div>
-                <strong>{request.userId?.name || "Unknown"}</strong>
+                {request.userId?._id ? (
+                  <Link className="inline-link" to={`/users/${request.userId._id}`}>
+                    {request.userId?.name || "Unknown"}
+                  </Link>
+                ) : (
+                  <strong>{request.userId?.name || "Unknown"}</strong>
+                )}
                 <div className="muted">Role: {request.requestedRole}</div>
               </div>
               <span className="badge">{request.status}</span>

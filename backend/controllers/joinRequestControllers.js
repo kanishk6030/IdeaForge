@@ -1,7 +1,14 @@
 const JoinRequest = require("../models/JoinRequest")
 const Idea = require("../models/Idea")
 const Notification = require("../models/Notification")
+const User = require("../models/User")
 const asyncHandler = require("../middleware/asyncHandler")
+const {
+  sendEmail,
+  buildJoinRequestEmail,
+  buildDecisionEmail
+} = require("../utils/emailService")
+const logger = require("../utils/logger")
 
 
 // Send join request
@@ -38,6 +45,26 @@ const sendJoinRequest = asyncHandler(async (req, res) => {
   type: "join_request",
   message: "Someone requested to join your project"
 })
+
+  try {
+    const owner = await User.findById(idea.createdBy).select("name email")
+    if (owner?.email) {
+      const appUrl = process.env.APP_URL || process.env.FRONTEND_URL || ""
+      const ideaUrl = appUrl ? `${appUrl}/ideas/${idea._id}` : ""
+      const profileUrl = appUrl ? `${appUrl}/users/${req.user._id}` : ""
+      const emailPayload = buildJoinRequestEmail({
+        ownerName: owner.name,
+        requesterName: req.user.name || "Someone",
+        role: request.requestedRole,
+        ideaTitle: idea.title,
+        ideaUrl,
+        profileUrl
+      })
+      await sendEmail({ to: owner.email, ...emailPayload })
+    }
+  } catch (err) {
+    logger.error({ err }, "Join request email failed")
+  }
 
   res.status(201).json({
     success: true,
@@ -129,6 +156,27 @@ const approveRequest = asyncHandler(async (req, res) => {
   message: "Your join request was approved"
 })
 
+  try {
+    const [requester, owner] = await Promise.all([
+      User.findById(request.userId).select("name email"),
+      User.findById(idea.createdBy).select("name email")
+    ])
+    if (requester?.email) {
+      const appUrl = process.env.APP_URL || process.env.FRONTEND_URL || ""
+      const ideaUrl = appUrl ? `${appUrl}/ideas/${idea._id}` : ""
+      const emailPayload = buildDecisionEmail({
+        requesterName: requester.name,
+        ownerName: owner?.name,
+        ideaTitle: idea.title,
+        decision: "approved",
+        ideaUrl
+      })
+      await sendEmail({ to: requester.email, ...emailPayload })
+    }
+  } catch (err) {
+    logger.error({ err }, "Join request approval email failed")
+  }
+
   res.status(200).json({
     success: true,
     request
@@ -167,6 +215,27 @@ const rejectRequest = asyncHandler(async (req, res) => {
   request.status = "rejected"
 
   await request.save()
+
+  try {
+    const [requester, owner] = await Promise.all([
+      User.findById(request.userId).select("name email"),
+      User.findById(idea.createdBy).select("name email")
+    ])
+    if (requester?.email) {
+      const appUrl = process.env.APP_URL || process.env.FRONTEND_URL || ""
+      const ideaUrl = appUrl ? `${appUrl}/ideas/${idea._id}` : ""
+      const emailPayload = buildDecisionEmail({
+        requesterName: requester.name,
+        ownerName: owner?.name,
+        ideaTitle: idea.title,
+        decision: "rejected",
+        ideaUrl
+      })
+      await sendEmail({ to: requester.email, ...emailPayload })
+    }
+  } catch (err) {
+    logger.error({ err }, "Join request rejection email failed")
+  }
 
   res.status(200).json({
     success: true,
