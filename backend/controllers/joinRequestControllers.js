@@ -244,9 +244,70 @@ const rejectRequest = asyncHandler(async (req, res) => {
 
 })
 
+// Remove an accepted member from an idea
+const removeApprovedRequest = asyncHandler(async (req, res) => {
+
+  const request = await JoinRequest.findById(req.params.id)
+
+  if (!request) {
+    res.status(404)
+    throw new Error("Request not found")
+  }
+
+  const idea = await Idea.findById(request.ideaId)
+
+  if (!idea) {
+    res.status(404)
+    throw new Error("Idea not found")
+  }
+
+  if (idea.createdBy.toString() !== req.user._id.toString()) {
+    res.status(403)
+    throw new Error("Not authorized to remove this member")
+  }
+
+  if (request.status !== "accepted") {
+    res.status(400)
+    throw new Error("Only accepted requests can be removed")
+  }
+
+  request.status = "rejected"
+  await request.save()
+
+  res.status(200).json({
+    success: true,
+    request
+  })
+
+})
+
+// Get current user's join request for an idea
+const getMyJoinRequestForIdea = asyncHandler(async (req, res) => {
+
+  const idea = await Idea.findById(req.params.ideaId)
+
+  if (!idea) {
+    res.status(404)
+    throw new Error("Idea not found")
+  }
+
+  const request = await JoinRequest.findOne({
+    ideaId: req.params.ideaId,
+    userId: req.user._id
+  })
+
+  res.status(200).json({
+    success: true,
+    request: request || null
+  })
+
+})
+
 module.exports = {
   sendJoinRequest,
   getIdeaRequests,
+  getMyJoinRequestForIdea,
   approveRequest,
-  rejectRequest
+  rejectRequest,
+  removeApprovedRequest
 }

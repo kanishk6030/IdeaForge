@@ -12,8 +12,13 @@ const IdeaDetail = () => {
   const [commentText, setCommentText] = useState("")
   const [requestedRole, setRequestedRole] = useState("")
   const [joinStatus, setJoinStatus] = useState("")
+  const [joinRequest, setJoinRequest] = useState(null)
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+
+  const isOwner = Boolean(
+    user && idea && String(user._id) === String(idea.createdBy?._id)
+  )
 
   const fetchIdea = async () => {
     setLoading(true)
@@ -37,6 +42,24 @@ const IdeaDetail = () => {
   useEffect(() => {
     fetchIdea()
   }, [id])
+
+  useEffect(() => {
+    const fetchJoinRequest = async () => {
+      if (!user || isOwner) {
+        setJoinRequest(null)
+        return
+      }
+
+      try {
+        const { data } = await api.get(`/api/join-requests/idea/${id}/me`)
+        setJoinRequest(data.request)
+      } catch (err) {
+        // Silent fail to avoid blocking the page
+      }
+    }
+
+    fetchJoinRequest()
+  }, [id, user, isOwner])
 
   const hasReacted = user
     ? reactions.some((reaction) => String(reaction.userId) === String(user._id))
@@ -92,14 +115,16 @@ const IdeaDetail = () => {
 
   const handleJoinRequest = async (event) => {
     event.preventDefault()
+    if (joinRequest) return
     if (!requestedRole.trim()) return
     setError("")
     setJoinStatus("")
     try {
-      await api.post(`/api/join-requests/${id}`, {
+      const { data } = await api.post(`/api/join-requests/${id}`, {
         requestedRole: requestedRole.trim()
       })
       setJoinStatus("Join request sent.")
+      setJoinRequest(data.request)
       setRequestedRole("")
     } catch (err) {
       setError(err.response?.data?.message || "Unable to send join request.")
@@ -113,8 +138,6 @@ const IdeaDetail = () => {
   if (!idea) {
     return <div className="card">Idea not found.</div>
   }
-
-  const isOwner = user && String(user._id) === String(idea.createdBy?._id)
 
   return (
     <div className="grid">
@@ -192,13 +215,16 @@ const IdeaDetail = () => {
                   placeholder="Requested role (e.g. Frontend Dev)"
                   value={requestedRole}
                   onChange={(event) => setRequestedRole(event.target.value)}
-                  disabled={!user}
+                  disabled={!user || Boolean(joinRequest)}
                 />
-                <button className="button" type="submit" disabled={!user}>
-                  Send request
+                <button className="button" type="submit" disabled={!user || Boolean(joinRequest)}>
+                  {joinRequest ? "Request sent" : "Send request"}
                 </button>
               </form>
               {joinStatus && <div className="banner">{joinStatus}</div>}
+              {joinRequest && (
+                <div className="badge">Status: {joinRequest.status}</div>
+              )}
               {!user && <div className="muted">Login to send a request.</div>}
             </>
           )}

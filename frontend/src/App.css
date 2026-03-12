@@ -288,6 +288,12 @@
   border-color: transparent;
 }
 
+.button.danger {
+  background: rgba(255, 122, 122, 0.2);
+  border-color: rgba(255, 122, 122, 0.5);
+  color: #ffdede;
+}
+
 .button.ghost {
   background: transparent;
   border-color: transparent;
@@ -357,6 +363,33 @@
 .list {
   display: grid;
   gap: 16px;
+}
+
+.managed-idea-card {
+  display: grid;
+  gap: 12px;
+}
+
+.member-list {
+  display: grid;
+  gap: 12px;
+}
+
+.member-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: rgba(21, 27, 22, 0.65);
+}
+
+.member-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .join-requests-list {
