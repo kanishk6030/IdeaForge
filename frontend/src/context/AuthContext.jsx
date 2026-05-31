@@ -6,7 +6,7 @@ const AuthContext = createContext(null)
 export const useAuth = () => useContext(AuthContext)
 
 const AuthProvider = ({ children }) => {
-  const [token, setToken] = useState(() => localStorage.getItem("ideahub_token"))
+  const [token, setToken] = useState(() => localStorage.getItem("idea_forge_token"))
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(false)
 
@@ -17,7 +17,7 @@ const AuthProvider = ({ children }) => {
       const { data } = await api.get("/api/users/me")
       setUser(data.user)
     } catch (error) {
-      localStorage.removeItem("ideahub_token")
+      localStorage.removeItem("idea_forge_token")
       setToken(null)
       setUser(null)
     } finally {
@@ -45,7 +45,7 @@ const AuthProvider = ({ children }) => {
       (response) => response,
       (error) => {
         if (error?.response?.status === 401) {
-          localStorage.removeItem("ideahub_token")
+          localStorage.removeItem("idea_forge_token")
           setToken(null)
           setUser(null)
         }
@@ -59,12 +59,12 @@ const AuthProvider = ({ children }) => {
   }, [])
 
   const loginWithToken = (newToken) => {
-    localStorage.setItem("ideahub_token", newToken)
+    localStorage.setItem("idea_forge_token", newToken)
     setToken(newToken)
   }
 
   const logout = () => {
-    localStorage.removeItem("ideahub_token")
+    localStorage.removeItem("idea_forge_token")
     setToken(null)
     setUser(null)
   }

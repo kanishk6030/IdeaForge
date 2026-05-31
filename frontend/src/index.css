@@ -1,13 +1,18 @@
-@import url("https://fonts.googleapis.com/css2?family=Instrument+Serif:opsz@8..72&family=Space+Grotesk:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap");
+@import "tailwindcss";
 
 :root {
-  font-family: "Space Grotesk", sans-serif;
+  font-family: "Inter", "Segoe UI", sans-serif;
   color-scheme: dark;
+  --font-display: "Hanken Grotesk", "Segoe UI", sans-serif;
+  --font-body: "Inter", "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", "Consolas", monospace;
 }
 
 body {
   margin: 0;
-  background: #0f1411;
+  background: #0a0a0b;
+  font-family: var(--font-body);
 }
 
 a {

@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import api from "../api/client.js"
 import { useAuth } from "../context/AuthContext.jsx"
 
@@ -56,81 +56,119 @@ const CreateIdea = () => {
 
   if (!user) {
     return (
-      <div className="card">
-        <h2>Login required</h2>
-        <p className="muted">You need an account to share new ideas.</p>
+      <div className="page-stack narrow-page">
+        <div className="card">
+          <h2>Login required</h2>
+          <p className="muted">You need an account to share new ideas.</p>
+          <Link className="button compact" to="/login">Sign in</Link>
+        </div>
       </div>
     )
   }
 
   return (
-    <section className="card">
-      <div className="card-header">
-        <h2>Launch a new idea</h2>
-        <span className="badge">MVP ready</span>
-      </div>
-      {error && <div className="alert">{error}</div>}
-      <form className="form-row" onSubmit={handleSubmit}>
-        <input
-          className="input"
-          name="title"
-          placeholder="Idea title"
-          value={form.title}
-          onChange={handleChange}
-        />
-        <textarea
-          className="textarea"
-          name="problem"
-          placeholder="Problem statement"
-          value={form.problem}
-          onChange={handleChange}
-        />
-        <textarea
-          className="textarea"
-          name="solution"
-          placeholder="Proposed solution"
-          value={form.solution}
-          onChange={handleChange}
-        />
-        <div className="form-grid">
-          <select
-            className="select"
-            name="difficulty"
-            value={form.difficulty}
-            onChange={handleChange}
-          >
-            <option value="">Difficulty</option>
-            <option value="beginner">Beginner</option>
-            <option value="intermediate">Intermediate</option>
-            <option value="advanced">Advanced</option>
-          </select>
-          <input
-            className="input"
-            name="techStack"
-            placeholder="Tech stack (comma separated)"
-            value={form.techStack}
-            onChange={handleChange}
-          />
-          <input
-            className="input"
-            name="rolesNeeded"
-            placeholder="Roles needed (comma separated)"
-            value={form.rolesNeeded}
-            onChange={handleChange}
-          />
-          <input
-            className="input"
-            name="tags"
-            placeholder="Tags (comma separated)"
-            value={form.tags}
-            onChange={handleChange}
-          />
-        </div>
-        <button className="button" type="submit" disabled={loading}>
-          {loading ? "Creating..." : "Publish idea"}
-        </button>
-      </form>
-    </section>
+    <div className="page-stack narrow-page">
+      <section className="page-header">
+        <span className="eyebrow">Create</span>
+        <h1>Publish a new idea</h1>
+        <p>Describe the problem, your proposed solution, and the kind of help you need.</p>
+      </section>
+
+      <section className="card">
+        {error && <div className="alert">{error}</div>}
+        <form className="form-row" onSubmit={handleSubmit}>
+          <label className="field">
+            <span>Idea title</span>
+            <input
+              className="input"
+              name="title"
+              placeholder="e.g. AI study planner"
+              value={form.title}
+              onChange={handleChange}
+              required
+            />
+          </label>
+
+          <label className="field">
+            <span>Problem</span>
+            <textarea
+              className="textarea"
+              name="problem"
+              placeholder="What problem does this solve?"
+              value={form.problem}
+              onChange={handleChange}
+              required
+            />
+          </label>
+
+          <label className="field">
+            <span>Solution</span>
+            <textarea
+              className="textarea"
+              name="solution"
+              placeholder="How do you want to solve it?"
+              value={form.solution}
+              onChange={handleChange}
+              required
+            />
+          </label>
+
+          <div className="form-grid">
+            <label className="field">
+              <span>Difficulty</span>
+              <select
+                className="select"
+                name="difficulty"
+                value={form.difficulty}
+                onChange={handleChange}
+              >
+                <option value="">Choose difficulty</option>
+                <option value="beginner">Beginner</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
+              </select>
+            </label>
+            <label className="field">
+              <span>Tech stack</span>
+              <input
+                className="input"
+                name="techStack"
+                placeholder="React, Node, MongoDB"
+                value={form.techStack}
+                onChange={handleChange}
+              />
+            </label>
+            <label className="field">
+              <span>Roles needed</span>
+              <input
+                className="input"
+                name="rolesNeeded"
+                placeholder="Designer, Backend Dev"
+                value={form.rolesNeeded}
+                onChange={handleChange}
+              />
+            </label>
+            <label className="field">
+              <span>Tags</span>
+              <input
+                className="input"
+                name="tags"
+                placeholder="AI, education, productivity"
+                value={form.tags}
+                onChange={handleChange}
+              />
+            </label>
+          </div>
+
+          <div className="form-actions">
+            <Link className="button secondary" to="/">Cancel</Link>
+            <button className="button" type="submit" disabled={loading}>
+              {loading ? "Publishing..." : "Publish idea"}
+            </button>
+          </div>
+        </form>
+      </section>
+    </div>
   )
 }
 

@@ -27,17 +27,18 @@ const Login = () => {
   }
 
   return (
-    <section className="card login-card">
-      <div className="card-header">
-        <h2>Welcome back</h2>
-        <span className="badge">Secure access</span>
+    <section className="login-card login-card-centered">
+      <div className="login-card-body">
+        <div className="login-card-grid">
+          <div>
+            <h2>Welcome back</h2>
+            <p>Use Google OAuth for a quick login. You will be redirected back once authorization is complete.</p>
+          </div>
+          <div className="login-pill">Secure Access</div>
+        </div>
       </div>
-      <p className="muted">
-        Use Google OAuth for a quick login. You will be redirected back once
-        authorization is complete.
-      </p>
-      <div className="form-row">
-        <button className="button" onClick={handleGoogleLogin}>
+      <div className="login-card-action">
+        <button className="login-cta" onClick={handleGoogleLogin}>
           Sign in with Google
         </button>
       </div>
