@@ -32,7 +32,7 @@ const renderLayout = ({ title, body, cta }) => {
       </div>
     `
     : ""
-
+    
   return `
   <div style="background:${brand.bg}; padding:32px; font-family: 'Inter', Arial, sans-serif; color:${brand.text};">
     <div style="max-width:560px; margin:0 auto; background:${brand.card}; border-radius:20px; padding:28px;">

@@ -16,7 +16,10 @@ const connectRedis = async () => {
 
   const url = buildRedisUrl()
   redisClient = createClient({
-    url
+    url,
+    socket: {
+      reconnectStrategy: false
+    }
   })
 
   redisClient.on("error", (err) => {
