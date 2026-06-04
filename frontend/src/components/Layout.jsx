@@ -36,11 +36,7 @@ const Layout = () => {
           </NavLink>
           <NavLink to="/notifications">
             <span className="material-symbols-outlined">auto_awesome</span>
-            Breakthroughs
-          </NavLink>
-          <NavLink to="/ideas/new">
-            <span className="material-symbols-outlined">biotech</span>
-            Forge Lab
+            Notifications
           </NavLink>
         </nav>
 
@@ -49,24 +45,10 @@ const Layout = () => {
           New Project
         </Link>
 
-        <nav className="ops-nav ops-nav-bottom" aria-label="Secondary navigation">
-          <Link to="/">
-            <span className="material-symbols-outlined">description</span>
-            Docs
-          </Link>
-          <Link to="/profile">
-            <span className="material-symbols-outlined">settings</span>
-            Settings
-          </Link>
-        </nav>
       </aside>
 
       <div className="ops-main">
         <header className="ops-topbar">
-          <label className="ops-search" aria-label="Search logs">
-            <span className="material-symbols-outlined">search</span>
-            <input placeholder="Search logs..." />
-          </label>
           <div className="profile-top-actions">
             <NavLink className="icon-button" to="/notifications" aria-label="Notifications">
               <span className="material-symbols-outlined">notifications</span>

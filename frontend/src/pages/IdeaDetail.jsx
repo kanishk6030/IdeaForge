@@ -1,5 +1,7 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Link, useParams } from "react-router-dom"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import { faComment, faThumbsUp } from "@fortawesome/free-regular-svg-icons"
 import api from "../api/client.js"
 import { useAuth } from "../context/AuthContext.jsx"
 
@@ -15,6 +17,7 @@ const IdeaDetail = () => {
   const [joinRequest, setJoinRequest] = useState(null)
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  const commentInputRef = useRef(null)
 
   const isOwner = Boolean(
     user && idea && String(user._id) === String(idea.createdBy?._id)
@@ -140,9 +143,9 @@ const IdeaDetail = () => {
   }
 
   return (
-    <div className="grid">
+    <div className="grid idea-detail">
       {error && <div className="alert">{error}</div>}
-      <section className="card">
+      <section className="card idea-detail-card">
         <div className="card-header">
           <div>
             <h2>{idea.title}</h2>
@@ -171,8 +174,8 @@ const IdeaDetail = () => {
             <div className="muted">{(idea.rolesNeeded || []).join(", ") || "Open"}</div>
           </div>
         </div>
-        <div className="form-row">
-          <div>
+        <div className="idea-detail-actions">
+          <div className="idea-tags">
             {(idea.tags || []).map((tag) => (
               <span key={tag} className="tag">{tag}</span>
             ))}
@@ -183,33 +186,47 @@ const IdeaDetail = () => {
             </Link>
           )}
         </div>
-      </section>
-
-      <section className="grid cols-2">
-        <div className="card soft">
-          <div className="card-header">
-            <h3 className="section-title">Reactions</h3>
-            <span className="badge">{reactions.length} likes</span>
+        <div className="idea-detail-metrics">
+          <div className="metric-item">
+            <button
+              className={`metric-button icon-only ${hasReacted ? "is-active" : ""}`}
+              type="button"
+              disabled={!user}
+              onClick={handleReact}
+              aria-label={hasReacted ? "Remove reaction" : "React"}
+            >
+              <FontAwesomeIcon icon={faThumbsUp} />
+            </button>
+            <span className="metric-count">{reactions.length}</span>
           </div>
-          <p className="muted">Show support or remove your reaction.</p>
-          <button className="button" disabled={!user} onClick={handleReact}>
-            {hasReacted ? "Remove reaction" : "Like this idea"}
-          </button>
-          {!user && <p className="muted">Login to react.</p>}
+          <div className="metric-item">
+            <button
+              className="metric-button icon-only"
+              type="button"
+              onClick={() => commentInputRef.current?.focus()}
+              aria-label="Comment"
+            >
+              <FontAwesomeIcon icon={faComment} />
+            </button>
+            <span className="metric-count">{comments.length}</span>
+          </div>
         </div>
-        <div className="card soft">
+
+        {!user && <p className="muted">Login to react or comment.</p>}
+
+        <div className="idea-detail-join">
           <h3 className="section-title">Join request</h3>
           {isOwner ? (
             <>
               <p className="muted">Review requests from collaborators.</p>
-              <Link className="button" to="/join-requests">
+              <Link className="button compact" to="/join-requests">
                 Manage join requests
               </Link>
             </>
           ) : (
             <>
               <p className="muted">Interested in collaborating? Send a request.</p>
-              <form className="form-row" onSubmit={handleJoinRequest}>
+              <form className="join-request-form" onSubmit={handleJoinRequest}>
                 <input
                   className="input"
                   placeholder="Requested role (e.g. Frontend Dev)"
@@ -229,34 +246,35 @@ const IdeaDetail = () => {
             </>
           )}
         </div>
-      </section>
 
-      <section className="card">
-        <h3 className="section-title">Comments</h3>
-        <div className="list">
-          {comments.map((comment) => (
-            <div key={comment._id} className="card soft">
-              <strong>{comment.userId?.name || "Anonymous"}</strong>
-              <p className="muted">{comment.content}</p>
-            </div>
-          ))}
-          {comments.length === 0 && (
-            <div className="muted">No comments yet.</div>
-          )}
+        <div className="idea-detail-comments">
+          <h3 className="section-title">Comments</h3>
+          <div className="list comment-list">
+            {comments.map((comment) => (
+              <div key={comment._id} className="card soft">
+                <strong>{comment.userId?.name || "Anonymous"}</strong>
+                <p className="muted">{comment.content}</p>
+              </div>
+            ))}
+            {comments.length === 0 && (
+              <div className="muted">No comments yet.</div>
+            )}
+          </div>
+          <form className="form-row comment-form" onSubmit={handleCommentSubmit}>
+            <textarea
+              ref={commentInputRef}
+              className="textarea"
+              placeholder="Share a thoughtful note"
+              value={commentText}
+              onChange={(event) => setCommentText(event.target.value)}
+              disabled={!user}
+            />
+            <button className="button" type="submit" disabled={!user}>
+              Post comment
+            </button>
+            {!user && <div className="muted">Login to comment.</div>}
+          </form>
         </div>
-        <form className="form-row" onSubmit={handleCommentSubmit}>
-          <textarea
-            className="textarea"
-            placeholder="Share a thoughtful note"
-            value={commentText}
-            onChange={(event) => setCommentText(event.target.value)}
-            disabled={!user}
-          />
-          <button className="button" type="submit" disabled={!user}>
-            Post comment
-          </button>
-          {!user && <div className="muted">Login to comment.</div>}
-        </form>
       </section>
     </div>
   )

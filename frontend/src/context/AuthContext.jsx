@@ -17,9 +17,12 @@ const AuthProvider = ({ children }) => {
       const { data } = await api.get("/api/users/me")
       setUser(data.user)
     } catch (error) {
-      localStorage.removeItem("idea_forge_token")
-      setToken(null)
-      setUser(null)
+      const status = error?.response?.status
+      if (status === 401) {
+        localStorage.removeItem("idea_forge_token")
+        setToken(null)
+        setUser(null)
+      }
     } finally {
       setLoading(false)
     }

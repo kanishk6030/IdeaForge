@@ -104,6 +104,12 @@ const JoinRequests = () => {
       </div>
 
       <div className="list join-requests-list">
+        <div className="join-requests-table-head">
+          <span>Name</span>
+          <span>Role</span>
+          <span>Status</span>
+          <span>Approved/Rejected</span>
+        </div>
         {loadingRequests && Array.from({ length: 4 }).map((_, index) => (
           <div key={`skeleton-${index}`} className="skeleton-card">
             <div className="skeleton skeleton-line large" />
@@ -115,21 +121,23 @@ const JoinRequests = () => {
           <div className="card">No requests for this idea yet.</div>
         )}
         {!loadingRequests && requests.map((request) => (
-          <div key={request._id} className="card soft join-request-card">
-            <div className="card-header">
-              <div>
-                {request.userId?._id ? (
-                  <Link className="inline-link" to={`/users/${request.userId._id}`}>
-                    {request.userId?.name || "Unknown"}
-                  </Link>
-                ) : (
-                  <strong>{request.userId?.name || "Unknown"}</strong>
-                )}
-                <div className="muted">Role: {request.requestedRole}</div>
-              </div>
+          <div key={request._id} className="card soft join-request-row">
+            <div className="join-request-name">
+              {request.userId?._id ? (
+                <Link className="inline-link" to={`/users/${request.userId._id}`}>
+                  {request.userId?.name || "Unknown"}
+                </Link>
+              ) : (
+                <strong>{request.userId?.name || "Unknown"}</strong>
+              )}
+            </div>
+            <div className="join-request-role muted">
+              {request.requestedRole}
+            </div>
+            <div className="join-request-status">
               <span className="badge">{request.status}</span>
             </div>
-            <div className="form-row">
+            <div className="form-row join-request-actions">
               <button
                 className="button"
                 onClick={() => handleAction(request._id, "approve")}

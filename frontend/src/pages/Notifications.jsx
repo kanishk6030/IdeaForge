@@ -7,6 +7,7 @@ const Notifications = () => {
   const [notifications, setNotifications] = useState([])
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  const [activeFilter, setActiveFilter] = useState("all")
 
   const loadNotifications = async () => {
     if (!user) return
@@ -65,33 +66,47 @@ const Notifications = () => {
     )
   }
 
-  const fallbackNotifications = [
-    {
-      _id: "sample-request",
-      type: "collaboration_request",
-      message: "Alex Rivera wants to join Project: Neural_Mesh",
-      read: false,
-      tone: "request",
-      time: "09:42:15 UTC"
-    },
-    {
-      _id: "sample-deploy",
-      type: "deployment_successful",
-      message: "Build #9422 deployed to Staging_Environment_B",
-      read: false,
-      tone: "update",
-      time: "08:15:00 UTC"
-    },
-    {
-      _id: "sample-comment",
-      type: "new_comment",
-      message: "Sarah Chen replied to your thread in Architecture_Review",
-      read: false,
-      tone: "comment",
-      time: "07:55:12 UTC"
+  const iconForType = (type = "") => {
+    if (type.includes("comment")) return "forum"
+    if (type.includes("reaction")) return "thumb_up"
+    if (type.includes("join_request") || type.includes("request")) return "person_add"
+    return "notifications"
+  }
+
+  const labelForType = (type = "") => {
+    switch (type) {
+      case "join_request":
+        return "Join request"
+      case "request_approved":
+        return "Request approved"
+      case "request_rejected":
+        return "Request rejected"
+      case "reaction":
+        return "New reaction"
+      case "comment":
+        return "New comment"
+      default:
+        return type.replaceAll("_", " ") || "Notification"
     }
-  ]
-  const visibleNotifications = notifications.length ? notifications : fallbackNotifications
+  }
+
+  const toneForType = (type = "") => {
+    if (type.includes("comment")) return "comment"
+    if (type.includes("reaction")) return "update"
+    if (type.includes("request")) return "request"
+    return "update"
+  }
+
+  const filterMap = {
+    all: () => true,
+    requests: (note) => note.type?.includes("request"),
+    updates: (note) => note.type?.includes("reaction"),
+    comments: (note) => note.type?.includes("comment")
+  }
+
+  const visibleNotifications = notifications.filter(
+    filterMap[activeFilter] || filterMap.all
+  )
 
   return (
     <div className="notification-feed">
@@ -101,10 +116,34 @@ const Notifications = () => {
           <p>System-wide updates and collaboration requests.</p>
         </div>
         <div className="segmented-control">
-          <button className="active">All</button>
-          <button>Requests</button>
-          <button>Updates</button>
-          <button>Comments</button>
+          <button
+            className={activeFilter === "all" ? "active" : ""}
+            onClick={() => setActiveFilter("all")}
+            type="button"
+          >
+            All
+          </button>
+          <button
+            className={activeFilter === "requests" ? "active" : ""}
+            onClick={() => setActiveFilter("requests")}
+            type="button"
+          >
+            Requests
+          </button>
+          <button
+            className={activeFilter === "updates" ? "active" : ""}
+            onClick={() => setActiveFilter("updates")}
+            type="button"
+          >
+            Updates
+          </button>
+          <button
+            className={activeFilter === "comments" ? "active" : ""}
+            onClick={() => setActiveFilter("comments")}
+            type="button"
+          >
+            Comments
+          </button>
         </div>
       </div>
       {error && <div className="alert">{error}</div>}
@@ -115,57 +154,35 @@ const Notifications = () => {
           <div className="skeleton skeleton-line" />
         </div>
       ))}
-      {!loading && (
+      {!loading && notifications.length === 0 && (
+        <div className="card">No notifications yet.</div>
+      )}
+      {!loading && notifications.length > 0 && (
         <section className="feed-section">
-          <div className="feed-divider"><span>Today</span></div>
-          {visibleNotifications.map((note, index) => (
-            <article key={note._id} className={`notification-item ${note.read ? "is-read" : ""} ${note.tone || ""}`}>
+          <div className="feed-divider"><span>Latest</span></div>
+          {visibleNotifications.map((note) => (
+            <article key={note._id} className={`notification-item ${note.read ? "is-read" : ""} ${toneForType(note.type)}`}>
               <span className="notification-stripe" />
               <div className="notification-icon">
                 <span className="material-symbols-outlined">
-                  {note.type.includes("request") ? "person_add" : note.type.includes("comment") ? "forum" : "deployed_code"}
+                  {iconForType(note.type)}
                 </span>
               </div>
               <div className="notification-body">
                 <div className="notification-copy">
-                  <h2>{note.type.replaceAll("_", " ")}</h2>
+                  <h2>{labelForType(note.type)}</h2>
                   <p>{note.message}</p>
-                  {index === 2 && (
-                    <blockquote>
-                      The logic for the cleanup flow looks solid, but we should throttle it during peak loads.
-                    </blockquote>
-                  )}
                 </div>
-                <span className="notification-time">{note.time || new Date(note.createdAt || Date.now()).toLocaleString()}</span>
-                {!String(note._id).startsWith("sample") && (
-                  <div className="notification-actions">
-                    <button className="button compact" onClick={() => markRead(note._id)}>Mark read</button>
-                    <button className="button secondary compact" onClick={() => deleteNotification(note._id)}>Delete</button>
-                  </div>
-                )}
+                <span className="notification-time">{new Date(note.createdAt || Date.now()).toLocaleString()}</span>
+                <div className="notification-actions">
+                  <button className="button compact" onClick={() => markRead(note._id)}>Mark read</button>
+                  <button className="button secondary compact" onClick={() => deleteNotification(note._id)}>Delete</button>
+                </div>
               </div>
             </article>
           ))}
         </section>
       )}
-      <section className="feed-section muted-feed">
-        <div className="feed-divider"><span>Yesterday</span></div>
-        {["Security Audit Complete", "System Maintenance"].map((title) => (
-          <article className="notification-item is-read" key={title}>
-            <span className="notification-stripe" />
-            <div className="notification-icon">
-              <span className="material-symbols-outlined">{title.includes("Security") ? "security" : "storage"}</span>
-            </div>
-            <div className="notification-body">
-              <div className="notification-copy">
-                <h2>{title}</h2>
-                <p>{title.includes("Security") ? "No critical vulnerabilities detected in Module_Vanguard_API" : "Database migration completed for Region_EU_West_1"}</p>
-              </div>
-              <span className="notification-time">2026-05-30 14:20</span>
-            </div>
-          </article>
-        ))}
-      </section>
     </div>
   )
 }
